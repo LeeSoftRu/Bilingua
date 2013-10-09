@@ -9,7 +9,13 @@ def extractBetween(text, start, end):
 
 @app.route('/')
 def index():
-    text = codecs.open(r'M:\cache_hc\notabenoid.com\book\24992\83961', 'r', 'utf8').read()
+    return redirect('/24992/83961/1/1')
+
+@app.route('/<bookId>/<chapterId>/<pageId>/<lineNo>')
+def read(bookId, chapterId, pageId, lineNo):
+    filePath=r'M:\cache_hc\notabenoid.com\book\{}\{}^\Orig_page={}' \
+        .format(bookId, chapterId, pageId)
+    text = codecs.open(filePath, 'r', 'utf8').read()
     text = extractBetween(text, '<table id="Tr"', '</table>')
     text = extractBetween(text[0], '<tbody', '</tbody>')
     cells = extractBetween(text[0], '<td', '</td>')

@@ -7,8 +7,13 @@ app = Flask('bilingua')
 def index():
     return "Hello"
 
-page = codecs.open(r'M:\cache_hc\notabenoid.com\book\24992\83961', 'r', 'utf8').read()
-table = re.findall(r'(<table id="Tr".*?</table>)', page, re.I | re.S)
-print(table)
+def extractBetween(text, start, end):
+    return re.findall('(' + re.escape(start) + '.*?' + re.escape(end) + ')'
+        , text, re.I | re.S)
 
-
+text = codecs.open(r'M:\cache_hc\notabenoid.com\book\24992\83961', 'r', 'utf8').read()
+text = extractBetween(text, '<table id="Tr"', '</table>')
+text = extractBetween(text[0], '<tbody', '</tbody>')
+cells = extractBetween(text[0], '<td', '</td>')
+for idx, cell in enumerate(cells):
+    print(idx+1, cell)

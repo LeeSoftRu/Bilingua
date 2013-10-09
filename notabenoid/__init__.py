@@ -30,14 +30,23 @@ def extractCellsFromFile(bookId, chapterId, pageId):
     cells = extractBetween(text[0], '<td', '</td>')
     return processCells(cells)
 
+def cellsToTable(cells):
+    table = '<table>'
+    for cell in cells:
+        table += '<tr><td style="border: 1px solid silver">' + cell + '</td></tr>'
+    table += '</table>'
+    return table
+
 @app.route('/')
 def index():
     return redirect('/24992/83961/1/1/0')
 
 @app.route('/<bookId>/<chapterId>/<pageId>/<lineNo>/<column>')
-def read(bookId, chapterId, pageId, lineNo, column):
-    page = '<table border=1>'
-    for cell in extractCellsFromFile(bookId, chapterId, pageId):
-        page += '<tr><td>' + cell + '</td></tr>'
-    page += '</table>'
-    return page
+def readWhilePage(bookId, chapterId, pageId, lineNo, column):
+    return cellsToTable(extractCellsFromFile(bookId, chapterId, pageId))
+
+@app.route('/<bookId>/<chapterId>/<pageId>/0')
+def readEnglishPage(bookId, chapterId, pageId):
+    cells = extractCellsFromFile(bookId, chapterId, pageId)
+    cells = [cell for idx, cell in enumerate(cells) if idx % 2 == 0]
+    return cellsToTable(cells)

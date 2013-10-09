@@ -2,4 +2,4 @@ from flask import Flask
 
 app = Flask('bilingua')
 from notabenoid import *
-app.run()
+app.run(debug=True)

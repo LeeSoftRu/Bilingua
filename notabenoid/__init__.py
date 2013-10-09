@@ -16,8 +16,19 @@ def index():
 
     page = '<table border=1>'
     for idx, cell in enumerate(cells):
-        #print(idx+1, call)
-        page += '<tr>' + cell + '</tr>'
+        cell = re.sub('\d+\.\d+\.\d+ в \d+:\d+</p>', '', cell)
+        cell = cell.replace('</p>', '[/p]')
+        cell = re.sub('<a.*?</a>', '', cell)
+        cell = re.sub('<.*?>', '', cell)
+        cell = cell.replace('[/p]', '</p>')
+        cell = re.sub('(</p>\s*)*$', '', cell, re.S)
+
+        if not cell:
+            continue
+
+        print(cell)
+
+        page += '<tr><td>' + cell + '</td></tr>'
     page += '</table>'
 
     return page

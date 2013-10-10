@@ -41,16 +41,45 @@ def cellsToTable(cells, boldOdd=False):
     table += '</table>'
     return table
 
+def createUrlTo(bookId, chapterId, pageId, lineNo=None, column=None):
+    return '/{}/{}/{}/{}/{}' \
+        .format(bookId, chapterId, pageId, lineNo, column)
+
 @app.route('/')
 def index():
-    return redirect('/24992/83961/1/1/0')
+    return redirect('/24992/83961/1/0/0')
 
 @app.route('/<bookId>/<chapterId>/<pageId>/<lineNo>/<column>')
-def readWhilePage(bookId, chapterId, pageId, lineNo, column):
-    return cellsToTable(extractCellsFromFile(bookId, chapterId, pageId), True)
+def readPhrase(bookId, chapterId, pageId, lineNo, column):
+    lineNo = int(lineNo)
+    column = int(column)
+
+    cells = extractCellsFromFile(bookId, chapterId, pageId)
+    cells = [cell for idx, cell in enumerate(cells) if idx % 2 == column]
+    if (lineNo > len(cells)):
+        print('lineNo > len(cells):', lineNo)
+        url = createUrlTo(bookId, chapterId, pageId + 1, lineNo=0, column=column)
+        return redirect(url)
+    return '' \
+        + '<a href="{}">Switch</a></br>' \
+            .format(createUrlTo(bookId, chapterId, pageId, lineNo, 0 if column else 1)) \
+        + '<hr/>' \
+        + cells[ lineNo + 1 ] \
+        + '<hr/>' \
+        + '<a href="{}">Next english</a></br>' \
+            .format(createUrlTo(bookId, chapterId, pageId, lineNo=lineNo+1, column=0)) \
+        + '<hr/>' \
+        + '<a href="{}">Next russian</a></br>' \
+            .format(createUrlTo(bookId, chapterId, pageId, lineNo=lineNo+1, column=1)) \
+        + '<hr/>' \
+        + ''
 
 @app.route('/<bookId>/<chapterId>/<pageId>/0')
 def readEnglishPage(bookId, chapterId, pageId):
     cells = extractCellsFromFile(bookId, chapterId, pageId)
     cells = [cell for idx, cell in enumerate(cells) if idx % 2 == 0]
     return cellsToTable(cells)
+
+@app.route('/<bookId>/<chapterId>/<pageId>')
+def readWholePage(bookId, chapterId, pageId, lineNo, column):
+    return cellsToTable(extractCellsFromFile(bookId, chapterId, pageId), True)

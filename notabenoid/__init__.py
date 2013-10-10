@@ -30,10 +30,14 @@ def extractCellsFromFile(bookId, chapterId, pageId):
     cells = extractBetween(text[0], '<td', '</td>')
     return processCells(cells)
 
-def cellsToTable(cells):
+def cellsToTable(cells, boldOdd=False):
     table = '<table>'
-    for cell in cells:
-        table += '<tr><td style="border: 1px solid silver">' + cell + '</td></tr>'
+    for idx, cell in enumerate(cells):
+        table += '<tr><td style="border: 1px solid silver">' \
+            + ('<b>' if boldOdd and idx % 2 == 0 else '') \
+            + cell \
+            + ('</b>' if boldOdd and idx % 2 == 0 else '') \
+            + '</td></tr>'
     table += '</table>'
     return table
 
@@ -43,7 +47,7 @@ def index():
 
 @app.route('/<bookId>/<chapterId>/<pageId>/<lineNo>/<column>')
 def readWhilePage(bookId, chapterId, pageId, lineNo, column):
-    return cellsToTable(extractCellsFromFile(bookId, chapterId, pageId))
+    return cellsToTable(extractCellsFromFile(bookId, chapterId, pageId), True)
 
 @app.route('/<bookId>/<chapterId>/<pageId>/0')
 def readEnglishPage(bookId, chapterId, pageId):

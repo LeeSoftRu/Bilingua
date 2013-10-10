@@ -42,8 +42,32 @@ def cellsToTable(cells, boldOdd=False):
     return table
 
 def createUrlTo(bookId, chapterId, pageId, lineNo=None, column=None):
+    if lineNo is None:
+        if column is None:
+            return '/{}/{}/{}'.format(bookId, chapterId, pageId)
+        else:
+            return '/{}/{}/{}/{}'.format(bookId, chapterId, pageId, column)
     return '/{}/{}/{}/{}/{}' \
         .format(bookId, chapterId, pageId, lineNo, column)
+
+def getPageNavigation(bookId, chapterId, pageId):
+    pageId = int(pageId)
+    return '' \
+        + '<a href="{}">Read in english</a></br>' \
+            .format(createUrlTo(bookId, chapterId, pageId, lineNo=0, column=0)) \
+        + '<a href="{}">Read in russian</a></br>' \
+            .format(createUrlTo(bookId, chapterId, pageId, lineNo=0, column=1)) \
+        + '<hr/>' \
+        + '<a href="{}">Whole page</a></br>' \
+            .format(createUrlTo(bookId, chapterId, pageId)) \
+        + '<a href="{}">Whole page in english</a></br>' \
+            .format(createUrlTo(bookId, chapterId, pageId, column=0)) \
+        + '<hr/>' \
+        + '<a href="{}">Start to read next page in russian</a></br>' \
+            .format(createUrlTo(bookId, chapterId, pageId + 1, lineNo=0, column=1)) \
+        + '<a href="{}">Start to read next page in english</a></br>' \
+            .format(createUrlTo(bookId, chapterId, pageId + 1, lineNo=0, column=0)) \
+        + ''
 
 @app.route('/')
 def index():
@@ -57,8 +81,7 @@ def readPhrase(bookId, chapterId, pageId, lineNo, column):
     cells = extractCellsFromFile(bookId, chapterId, pageId)
     cells = [cell for idx, cell in enumerate(cells) if idx % 2 == column]
     if (lineNo > len(cells)):
-        print('lineNo > len(cells):', lineNo)
-        url = createUrlTo(bookId, chapterId, pageId + 1, lineNo=0, column=column)
+        url = createUrlTo(bookId, chapterId, int(pageId))
         return redirect(url)
     return '' \
         + '<a href="{}">Switch</a></br>' \
@@ -72,14 +95,30 @@ def readPhrase(bookId, chapterId, pageId, lineNo, column):
         + '<a href="{}">Next russian</a></br>' \
             .format(createUrlTo(bookId, chapterId, pageId, lineNo=lineNo+1, column=1)) \
         + '<hr/>' \
+        + '<a href="{}">Whole page</a></br>' \
+            .format(createUrlTo(bookId, chapterId, pageId)) \
+        + '<a href="{}">Whole page in english</a></br>' \
+            .format(createUrlTo(bookId, chapterId, pageId, column=0)) \
         + ''
 
 @app.route('/<bookId>/<chapterId>/<pageId>/0')
 def readEnglishPage(bookId, chapterId, pageId):
     cells = extractCellsFromFile(bookId, chapterId, pageId)
     cells = [cell for idx, cell in enumerate(cells) if idx % 2 == 0]
-    return cellsToTable(cells)
+    return '' \
+        + getPageNavigation(bookId, chapterId, pageId) \
+        + '<hr/>' \
+        + cellsToTable(cells) \
+        + '<hr/>' \
+        + getPageNavigation(bookId, chapterId, pageId) \
+        + ''
 
 @app.route('/<bookId>/<chapterId>/<pageId>')
-def readWholePage(bookId, chapterId, pageId, lineNo, column):
-    return cellsToTable(extractCellsFromFile(bookId, chapterId, pageId), True)
+def readWholePage(bookId, chapterId, pageId):
+    return '' \
+        + getPageNavigation(bookId, chapterId, pageId) \
+        + '<hr/>' \
+        + cellsToTable(extractCellsFromFile(bookId, chapterId, pageId), True) \
+        + '<hr/>' \
+        + getPageNavigation(bookId, chapterId, pageId) \
+        + ''

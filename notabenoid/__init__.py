@@ -71,7 +71,7 @@ def getPageNavigation(bookId, chapterId, pageId):
 
 @app.route('/')
 def index():
-    return redirect('/24992/83961/1/0/0')
+    return redirect('/24992/83264/1/0/0')
 
 @app.route('/<bookId>/<chapterId>/<pageId>/<lineNo>/<column>')
 def readPhrase(bookId, chapterId, pageId, lineNo, column):
@@ -83,22 +83,25 @@ def readPhrase(bookId, chapterId, pageId, lineNo, column):
     if (lineNo > len(cells)):
         url = createUrlTo(bookId, chapterId, int(pageId))
         return redirect(url)
-    return '' \
+    return '<body style="background-color: #EEEEEE;">' \
+        + '<div style="background-color: white; padding: 5px; overflow: scroll; height: 150px; font-size: 200%; border: 1px solid black;">' \
+        + cells[ lineNo + 1 ] \
+        + '</div>' \
+        + '<br/>' \
         + '<a href="{}">Switch</a></br>' \
             .format(createUrlTo(bookId, chapterId, pageId, lineNo, 0 if column else 1)) \
         + '<hr/>' \
-        + cells[ lineNo + 1 ] \
-        + '<hr/>' \
+        + '<a href="{}">Next russian</a></br>' \
+            .format(createUrlTo(bookId, chapterId, pageId, lineNo=lineNo+1, column=1)) \
+        + '<br/>' \
         + '<a href="{}">Next english</a></br>' \
             .format(createUrlTo(bookId, chapterId, pageId, lineNo=lineNo+1, column=0)) \
         + '<hr/>' \
-        + '<a href="{}">Next russian</a></br>' \
-            .format(createUrlTo(bookId, chapterId, pageId, lineNo=lineNo+1, column=1)) \
-        + '<hr/>' \
-        + '<a href="{}">Whole page</a></br>' \
-            .format(createUrlTo(bookId, chapterId, pageId)) \
         + '<a href="{}">Whole page in english</a></br>' \
             .format(createUrlTo(bookId, chapterId, pageId, column=0)) \
+        + '<br/>' \
+        + '<a href="{}">Whole page</a></br>' \
+            .format(createUrlTo(bookId, chapterId, pageId)) \
         + ''
 
 @app.route('/<bookId>/<chapterId>/<pageId>/0')

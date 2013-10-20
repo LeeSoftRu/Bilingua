@@ -16,6 +16,8 @@ def processCells(cells):
         cell = re.sub('\d+\.\d+\.\d+ в \d+:\d+</p>', '', cell)
         cell = cell.replace('</p>', '[/p]')
         cell = re.sub('<a.*?</a>', '', cell)
+        cell = re.sub(r"\s*&middot; <span class='t1'>\d+:\d+.\d+</span> &rarr; <span class='t2'>\d+:\d+.\d+</span>"
+            , '', cell)
         cell = re.sub('<.*?>', '', cell)
         cell = cell.replace('[/p]', '</p>')
         cell = re.sub('(</p>\s*)*$', '', cell, re.S)
@@ -32,7 +34,6 @@ def extractCellsFromFile(bookId, chapterId, pageId):
     text = extractBetween(text, '<table id="Tr"', '</table>')
     text = extractBetween(text[0], '<tbody', '</tbody>')
     cells = extractBetween(text[0], '<td', '</td>')
-    # TODO Remove timing marks in case of subtitles
     return processCells(cells)
 
 def cellsToTable(cells, boldOdd=False):

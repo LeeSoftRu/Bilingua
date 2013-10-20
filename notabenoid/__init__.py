@@ -1,7 +1,10 @@
 from flask import Flask, render_template, redirect, request
 import urllib, codecs, re
+import lees
 
 app = Flask('bilingua')
+
+dataFolder = r'data\notabenoid\book'
 
 def extractBetween(text, start, end):
     return re.findall('(' + re.escape(start) + '.*?' + re.escape(end) + ')'
@@ -22,12 +25,14 @@ def processCells(cells):
     return result
 
 def extractCellsFromFile(bookId, chapterId, pageId):
-    filePath=r'M:\cache_hc\notabenoid.com\book\{}\{}^\Orig_page={}' \
+    global dataFolder
+    filePath = dataFolder + r'\{}\{}^\Orig_page={}' \
         .format(bookId, chapterId, pageId)
     text = codecs.open(filePath, 'r', 'utf8').read()
     text = extractBetween(text, '<table id="Tr"', '</table>')
     text = extractBetween(text[0], '<tbody', '</tbody>')
     cells = extractBetween(text[0], '<td', '</td>')
+    # TODO Remove timing marks in case of subtitles
     return processCells(cells)
 
 def cellsToTable(cells, boldOdd=False):
@@ -41,7 +46,7 @@ def cellsToTable(cells, boldOdd=False):
     table += '</table>'
     return table
 
-def createUrlTo(bookId, chapterId, pageId, lineNo=None, column=None):
+def createUrlTo(bookId, chapterId, pageId=1, lineNo=None, column=None):
     if lineNo is None:
         if column is None:
             return '/{}/{}/{}'.format(bookId, chapterId, pageId)
@@ -71,7 +76,21 @@ def getPageNavigation(bookId, chapterId, pageId):
 
 @app.route('/')
 def index():
-    return redirect('/24992/83264/1/0/0')
+    global dataFolder
+    files = lees.Disk.findFilesRecursive(dataFolder
+        , lees.Path.Filter.fullNameEquals("Orig_page=1"))
+    html = "<ol>"
+    for file in files:
+        text = lees.File.read(file)
+        title = re.findall(r"\<h1\>(.*?)\<\/h1\>", text)[0]
+        title = title.replace("</a>: ", "</a>:</br>")
+        title = re.sub(r'\<\/?a.*?\>', '', title)
+        #print(file)
+        #print(re.findall(r'\\book\\(\d+)\\(\d+)\^\\Orig_page=1', file))
+        bookId, chapterId = re.findall(r'\\book\\(\d+)\\(\d+)\^\\Orig_page=1', file)[0]
+        url = createUrlTo(bookId, chapterId, lineNo=0, column=1)
+        html += '<li><a href="{}">{}</a><hr/>'.format(url, title)
+    return html + '</ol>'
 
 @app.route('/<bookId>/<chapterId>/<pageId>/<lineNo>/<column>')
 def readPhrase(bookId, chapterId, pageId, lineNo, column):

@@ -21,9 +21,7 @@ def processCells(cells):
         cell = re.sub('<.*?>', '', cell)
         cell = cell.replace('[/p]', '</p>')
         cell = re.sub('(</p>\s*)*$', '', cell, re.S)
-        if cell:
-            #print(cell)
-            result.append(cell)
+        result.append(cell)
     return result
 
 def extractCellsFromFile(bookId, chapterId, pageId):
@@ -33,7 +31,13 @@ def extractCellsFromFile(bookId, chapterId, pageId):
     text = codecs.open(filePath, 'r', 'utf8').read()
     text = extractBetween(text, '<table id="Tr"', '</table>')
     text = extractBetween(text[0], '<tbody', '</tbody>')
-    cells = extractBetween(text[0], '<td', '</td>')
+
+    cellsEng = extractBetween(text[0], "<td class='o'", '</td>')
+    cellsRus = extractBetween(text[0], "<td class='t'", '</td>')
+    cells = []
+    for idx in range(0, len(cellsEng)):
+        cells.append(cellsEng[idx])
+        cells.append(cellsRus[idx])
     return processCells(cells)
 
 def cellsToTable(cells, boldOdd=False):
@@ -122,6 +126,9 @@ def readPhrase(bookId, chapterId, pageId, lineNo, column):
         + '<br/>' \
         + '<a href="{}">Whole page</a></br>' \
             .format(createUrlTo(bookId, chapterId, pageId)) \
+        + '<hr/>' \
+        + '<a href="{}">Home</a></br>' \
+            .format('/') \
         + ''
 
 @app.route('/<bookId>/<chapterId>/<pageId>/0')
